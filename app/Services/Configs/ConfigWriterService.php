@@ -11,6 +11,8 @@ use Exception;
  */
 class ConfigWriterService
 {
+    use TypeTrait;
+
     protected string $dbName;
     protected string $dbHost;
     protected string $dbUser;
@@ -18,16 +20,20 @@ class ConfigWriterService
     protected int $dbPort;
 
     /**
+     * @param string $type
      * @param string $dbName
      * @param string $dbHost
      * @param string $dbUser
      * @param string $dbPassword
      * @param int $dbPort
      *
+     * @throws \Throwable
+     *
      * @return $this
      */
-    public function setConfig(string $dbName, string $dbHost, string $dbUser, string $dbPassword, int $dbPort = 3306): static | self
+    public function setConfig(string $type, string $dbName, string $dbHost, string $dbUser, string $dbPassword, int $dbPort = 3306): static | self
     {
+        $this->getFileFromType($type);
         $this->dbName = $dbName;
         $this->dbHost = $dbHost;
         $this->dbUser = $dbUser;
@@ -47,7 +53,7 @@ class ConfigWriterService
         $mysql['password'] = $this->dbPassword;
 
         $jsonString = collect($mysql)->toJson();
-        $this->openAndWrite("{$this->dbName}.json", $jsonString);
+        $this->openAndWrite($this->fileName, $jsonString);
     }
 
     /**

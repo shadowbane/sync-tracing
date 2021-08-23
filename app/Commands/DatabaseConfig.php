@@ -5,8 +5,14 @@ namespace App\Commands;
 use App\Services\Configs\ConfigReaderService;
 use App\Services\Configs\ConfigWriterService;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Validation\ValidationException;
 use LaravelZero\Framework\Commands\Command;
 
+/**
+ * Class DatabaseConfig.
+ *
+ * @package App\Commands
+ */
 class DatabaseConfig extends Command
 {
     protected array $config;
@@ -46,9 +52,9 @@ class DatabaseConfig extends Command
     {
         $option = $this->menu('Config Database', [
             'hrms' => 'HRMS Yayasan Vitka',
-            'siakad_btp2' => 'SIAKAD BTP',
-            'siakad_iteba' => 'SIAKAD ITEBA',
-            'absen_api' => 'Tracing API',
+            'btp' => 'SIAKAD BTP',
+            'iteba' => 'SIAKAD ITEBA',
+            'tracing' => 'Tracing API',
         ])->open();
 
         if (blank($option)) {
@@ -67,7 +73,7 @@ class DatabaseConfig extends Command
     private function readDbConfig(string $db)
     {
         try {
-            $this->reader = (new ConfigReaderService())->readConfig("{$db}.json");
+            $this->reader = (new ConfigReaderService())->readConfig($this->selectedOption);
 
             $this->info("Database Hostname / IP Address: {$this->reader['host']}");
             $this->info("Database Port: {$this->reader['port']}");
@@ -77,6 +83,9 @@ class DatabaseConfig extends Command
 
             $generateMessage = 'update';
 
+        } catch (ValidationException $validationException) {
+            $this->error($validationException->errors()['type'][0]);
+            exit(1);
         } catch (\Exception $exception) {
             $this->error($exception->getMessage());
             $generateMessage = 'generate';
@@ -85,6 +94,13 @@ class DatabaseConfig extends Command
         $this->askToUpdate($generateMessage);
     }
 
+    /**
+     * Asks user whether they want to generate / update.
+     *
+     * @param string $generateMessage
+     *
+     * @throws \Throwable
+     */
     private function askToUpdate(string $generateMessage)
     {
         $generate = $this->ask("Would you like to {$generateMessage} {$this->selectedOption}.json? [yes / no]", 'yes');
@@ -96,6 +112,11 @@ class DatabaseConfig extends Command
         }
     }
 
+    /**
+     * Update the config via ConfigWriterService.
+     *
+     * @throws \Throwable
+     */
     public function updateConfig()
     {
         $dbName = $this->ask('Enter Database Name', $this->reader['database'] ?? $this->selectedOption);
@@ -107,27 +128,20 @@ class DatabaseConfig extends Command
         try {
             $writer = new ConfigWriterService();
             $writer->setConfig(
+                $this->selectedOption,
                 $dbName,
                 $dbHost,
                 $dbUser,
                 $dbPassword,
                 $dbPort
             )->writeConfig();
+        } catch (ValidationException $validationException) {
+            $this->error($validationException->errors()['type'][0]);
+            exit(1);
         } catch (\Exception $exception) {
             $this->error($exception->getMessage());
         }
 
         $this->showBaseMenu();
-    }
-
-    /**
-     * Define the command's schedule.
-     *
-     * @param  \Illuminate\Console\Scheduling\Schedule $schedule
-     * @return void
-     */
-    public function schedule(Schedule $schedule): void
-    {
-        // $schedule->command(static::class)->everyMinute();
     }
 }

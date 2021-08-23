@@ -11,17 +11,20 @@ use Exception;
  */
 class ConfigReaderService
 {
+    use TypeTrait;
 
     /**
      * Read config file.
      *
-     * @param string $file
+     * @param string $type
      *
      * @throws \Throwable
-     * @return mixed
+     *
+     * @return array
      */
-    public function readConfig(string $file)
+    public function readConfig(string $type): array
     {
+        $file = $this->getFileFromType($type);
         throw_unless(file_exists($file), new Exception("File {$file} Not Found."));
 
         return json_decode(file_get_contents($file), true);

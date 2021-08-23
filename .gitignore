@@ -5,5 +5,7 @@
 .phpunit.result.cache
 /database/database.sqlite
 /builds
-/siakad_*.json
 /hrms.json
+/btp.json
+/iteba.json
+/tracing.json

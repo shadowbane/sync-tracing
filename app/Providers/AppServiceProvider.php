@@ -21,11 +21,13 @@ class AppServiceProvider extends ServiceProvider
         try {
             config([
                 // load HRMS DB
-                'database.connections.hrms' => $configReader->readConfig('hrms.json'),
+                'database.connections.hrms' => $configReader->readConfig('hrms'),
                 // load SIAKAD BTP DB
-                'database.connections.btp' => $configReader->readConfig('siakad_btp2.json'),
+                'database.connections.btp' => $configReader->readConfig('btp'),
                 // load HRMS DB
-                'database.connections.iteba' => $configReader->readConfig('siakad_iteba.json'),
+                'database.connections.iteba' => $configReader->readConfig('iteba'),
+                // load Tracing DB
+                'database.connections.tracing' => $configReader->readConfig('tracing'),
             ]);
         } catch (\Exception $exception) {
             if (app()->runningInConsole()) {
