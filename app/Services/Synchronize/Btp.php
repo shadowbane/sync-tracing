@@ -20,8 +20,8 @@ class Btp extends AbstractConnector
     {
         $this->query = $this->db->select("
             SELECT
-                uuid,
                 (SELECT `name` FROM mahasiswa_details md WHERE mr.mahasiswa_uuid = md.uuid AND deleted_at IS NULL) as `name`,
+               'BTP' as unit,
                 nim as identifier,
                 (SELECT COUNT(id) FROM mahasiswa_vaccinations mv WHERE mv.mahasiswa_detail_uuid = (
                     SELECT uuid FROM mahasiswa_details md WHERE mr.mahasiswa_uuid = md.uuid
