@@ -2,10 +2,16 @@
 
 namespace App\Commands;
 
+use App\Models\AbsenApi\Identifier;
 use App\Services\Synchronize\Synchronize as SyncService;
 use Illuminate\Console\Scheduling\Schedule;
 use LaravelZero\Framework\Commands\Command;
 
+/**
+ * Class Synchronize.
+ *
+ * @package App\Commands
+ */
 class Synchronize extends Command
 {
     protected string $selectedOption;
@@ -45,6 +51,7 @@ class Synchronize extends Command
         try {
             $this->syncService = app()->make(SyncService::class);
             $this->loadData();
+            $this->synchronize();
         } catch (\Exception $exception) {
             $this->error($exception->getMessage());
             exit(1);
@@ -70,12 +77,41 @@ class Synchronize extends Command
         $this->selectedOption = $option;
     }
 
+    /**
+     * Load the data from server.
+     */
     private function loadData()
     {
         if ($this->selectedOption == 'all' || $this->selectedOption == 'a') {
             $this->syncService->getAllData();
         } else {
             $this->syncService->getData($this->selectedOption);
+        }
+    }
+
+    /**
+     * Run the synchronization.
+     */
+    private function synchronize()
+    {
+        foreach ($this->syncService->result as $item) {
+            $this->task("Updating: {$item->unit} - {$item->identifier} {$item->name}", function () use ($item) {
+                $data = Identifier::updateOrCreate([
+                    'identifier' => $item->identifier,
+                    'unit' => $item->unit,
+                ], [
+                    'identifier' => $item->identifier,
+                    'unit' => $item->unit,
+                    'name' => $item->name,
+                    'vaccine_count' => $item->vaccine_count,
+                ]);
+
+                if ($data) {
+                    return true;
+                }
+
+                return false;
+            });
         }
     }
 

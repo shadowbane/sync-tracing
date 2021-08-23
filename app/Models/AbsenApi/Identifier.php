@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Model;
 class Identifier extends Model
 {
     protected $table = 'internal_identifiers';
+    protected $connection = 'tracing';
+
     protected $fillable = ['identifier', 'name', 'unit', 'vaccine_count'];
     protected $dates = [
         'created_at',
