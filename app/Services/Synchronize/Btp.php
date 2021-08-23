@@ -25,7 +25,7 @@ class Btp extends AbstractConnector
                 nim as identifier,
                 (SELECT COUNT(id) FROM mahasiswa_vaccinations mv WHERE mv.mahasiswa_detail_uuid = (
                     SELECT uuid FROM mahasiswa_details md WHERE mr.mahasiswa_uuid = md.uuid
-                )) as vac_count
+                )) as vaccine_count
             FROM mahasiswa_registers mr
             WHERE id_jenis_keluar IS NULL
             AND deleted_at IS NULL;
