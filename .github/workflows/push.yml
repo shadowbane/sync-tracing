@@ -18,10 +18,10 @@ jobs:
         run: composer update -q --no-ansi --no-interaction --no-scripts --no-progress
       - name: "Building Application"
         run: |
-          php absen-cli app:build -n AbsenCli
+          php synctrace app:build -n SyncTrace
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           files: |
-            builds/AbsenCli
+            builds/SyncTrace
