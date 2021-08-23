@@ -36,15 +36,19 @@ class Synchronize extends Command
      */
     public function handle()
     {
-        $this->syncService = app()->make(SyncService::class);
-
         $this->selectedOption = strtolower($this->option('server'));
 
         if (blank($this->selectedOption)) {
             $this->showBaseMenu();
         }
 
-        $this->loadData();
+        try {
+            $this->syncService = app()->make(SyncService::class);
+            $this->loadData();
+        } catch (\Exception $exception) {
+            $this->error($exception->getMessage());
+            exit(1);
+        }
     }
 
     /**
