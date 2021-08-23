@@ -2,19 +2,23 @@
 
 namespace App\Commands;
 
+use App\Services\Synchronize\Synchronize as SyncService;
 use Illuminate\Console\Scheduling\Schedule;
 use LaravelZero\Framework\Commands\Command;
 
 class Synchronize extends Command
 {
     protected string $selectedOption;
+    protected SyncService $syncService;
 
     /**
      * The signature of the command.
      *
      * @var string
      */
-    protected $signature = 'command:name {--server=}';
+    protected $signature = 'sync
+        {--server= : Valid Options: all, hrms, btp, iteba}
+    ';
 
     /**
      * The description of the command.
@@ -26,15 +30,21 @@ class Synchronize extends Command
     /**
      * Execute the console command.
      *
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     *
      * @return mixed
      */
     public function handle()
     {
-        $server = $this->option('server');
+        $this->syncService = app()->make(SyncService::class);
 
-        if (blank($server)) {
+        $this->selectedOption = strtolower($this->option('server'));
+
+        if (blank($this->selectedOption)) {
             $this->showBaseMenu();
         }
+
+        $this->loadData();
     }
 
     /**
@@ -45,16 +55,24 @@ class Synchronize extends Command
         $option = $this->menu('Select server to synchronize', [
             'all' => 'All Server',
             'hrms' => 'HRMS Yayasan Vitka',
-            'siakad_btp2' => 'SIAKAD BTP',
-            'siakad_iteba' => 'SIAKAD ITEBA',
+            'btp' => 'SIAKAD BTP',
+            'iteba' => 'SIAKAD ITEBA',
         ])->open();
 
         if (blank($option)) {
-            return;
+            exit(0);
         }
 
         $this->selectedOption = $option;
-        $this->readDbConfig($this->selectedOption);
+    }
+
+    private function loadData()
+    {
+        if ($this->selectedOption == 'all' || $this->selectedOption == 'a') {
+            $this->syncService->getAllData();
+        } else {
+            $this->syncService->getData($this->selectedOption);
+        }
     }
 
     /**
@@ -65,6 +83,6 @@ class Synchronize extends Command
      */
     public function schedule(Schedule $schedule): void
     {
-        // $schedule->command(static::class)->everyMinute();
+         $schedule->command(static::class, ['--server=a'])->everyThirtyMinutes();
     }
 }
