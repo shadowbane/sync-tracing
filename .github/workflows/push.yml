@@ -1,0 +1,27 @@
+name: "build"
+on:
+  push:
+    tags:
+      - "v*"
+jobs:
+  tagged-release:
+    name: "Tagged Release"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+      - name: Setup PHP 8.0
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+      - name: "Installing Packages"
+        run: composer update -q --no-ansi --no-interaction --no-scripts --no-progress
+      - name: "Building Application"
+        run: |
+          php absen-cli app:build -n AbsenCli
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          files: |
+            builds/AbsenCli
