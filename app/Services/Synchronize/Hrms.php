@@ -22,7 +22,7 @@ class Hrms extends AbstractConnector
             SELECT
                 `name`,
                'Yayasan' as unit,
-                ( SELECT nip FROM employees WHERE eb.uuid = employees.detail_uuid AND terminate_id IS NULL AND deleted_at IS NULL ORDER BY id DESC LIMIT 1 ) AS identifier,
+                ( SELECT CONCAT('YV', nip) FROM employees WHERE eb.uuid = employees.detail_uuid AND terminate_id IS NULL AND deleted_at IS NULL ORDER BY id DESC LIMIT 1 ) AS identifier,
                 ( SELECT COUNT( id ) FROM employee_vaccinations WHERE eb.uuid = employee_vaccinations.detail_uuid AND deleted_at IS NULL ORDER BY id DESC LIMIT 1 ) AS vaccine_count
             FROM
                 employee_biodatas eb
